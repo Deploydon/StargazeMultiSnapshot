@@ -13,12 +13,12 @@ My rust abilities are not the best, so bare with me.
 Also included in the Tester folder is a simple nodejs script that uses the cosmwasm library to call this function, providing a testnet NFT collection. 
 
 ```
-Code ID: 315
-Testnet Address: stars18eupq2qjpygftyl488yzkr06s3kmw6j8zs9utnh7kyfk9tck0swsxkn8cj
+Code ID: 317
+Testnet Address: stars1pl4mjn6l0ka6zsmn7f87ajjh55x8q3j8t77nacu3j6caq0yqq8xs3ve0u4
 ```
 
 
-Example Response:
+Example Response (Start:30, End: 35):
 ```
 [
   { id: 30, owner: 'stars17y9ysn4uwusc0qv0d48wtc5rf4gnu6mqvjpvg9' },
@@ -32,8 +32,8 @@ Example Response:
 
 Development Status:
 - [x] Querying based on a start and end index
-- [ ] Better Error Handling
-- [ ] Limiting number returned
+- [x] Better Error Handling
+- [x] Limiting number returned
 - [ ] Query for the minter address, and grab num_tokens. This will allow us to pass in page numbers, rather than a start and end index.
 
 

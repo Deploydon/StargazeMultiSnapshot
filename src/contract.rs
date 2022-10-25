@@ -1,6 +1,6 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, StdError};
 // use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, OwnerInfo, QueryMsg};
@@ -59,9 +59,27 @@ fn collection_owners(
 ) -> StdResult<Vec<OwnerInfo>> {
     let mut owners: Vec<OwnerInfo> = vec![];
     let contract = Cw721Contract(collection.clone());
-    //  let minter_addr = contract.minter(deps)?;
-    //  let mint_contract = Cw721Contract(minter_addr);
-    // let num_tokens = mint_contract.config(deps)?.num_tokens;
+
+    //TODO: Query the SG721 contract to get the minter address
+    //Query minter contract to get num_tokens. (Can't use the sg721 num_tokens, as that returns the remaining amount after burn, rather than init total)
+    
+    /*
+    let minter_addr = contract.minter(deps)?;
+    let mint_contract = Cw721Contract(minter_addr);
+    let num_tokens = mint_contract.config(deps)?.num_tokens;
+    */
+
+    if start > end {
+        return Err(StdError::generic_err("Invalid Range. Start must be less than End"));
+    }
+
+    if start < 0 {
+        return Err(StdError::generic_err("Negative Range. Start must be greater than 0"));
+    }
+
+    if end - start > 100 {
+        return Err(StdError::generic_err("Invalid Range Size. You can only query 100 owners at a time."));
+    }
 
     for i in start..end {
         let owner_query = match contract.owner_of(&deps.querier, i.to_string(), false) {
