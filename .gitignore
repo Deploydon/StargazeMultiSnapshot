@@ -16,3 +16,4 @@
 .idea
 
 artifacts/
+node_modules

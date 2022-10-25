@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "cosmwasm": "^1.1.1"
+  }
+}

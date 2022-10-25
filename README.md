@@ -10,11 +10,11 @@ The plan is to deploy this into Stargaze governance to bring it live on Mainnet.
 
 My rust abilities are not the best, so bare with me. 
 
-Also included is a simple nodejs script that uses the cosmwasm library to call this function, providing a testnet NFT collection. 
+Also included in the Tester folder is a simple nodejs script that uses the cosmwasm library to call this function, providing a testnet NFT collection. 
 
 ```
-Code ID: 314
-Testnet Address: stars16anequa0kll4086z648t0vcx6mtp9xe6hr6y4s0c7a9hw9e9dthsfqyczu
+Code ID: 315
+Testnet Address: stars18eupq2qjpygftyl488yzkr06s3kmw6j8zs9utnh7kyfk9tck0swsxkn8cj
 ```
 
 
