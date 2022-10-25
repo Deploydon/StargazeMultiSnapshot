@@ -40,57 +40,61 @@ pub fn query(_deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
     match _msg {
         QueryMsg::CollectionOwners {
             collection,
-            start,
-            end,
+            iters,
+            start_after,
+            limit,
         } => to_binary(&collection_owners(
             _deps,
             api.addr_validate(&collection.to_string())?,
-            start,
-            end,
+            iters,
+            start_after,
+            limit,
         )?),
     }
 }
 
+/// Returns a list of token id --> owner wallet mappings 
+/// 
+/// # Arguments
+/// * `collection` - the address of the collection to map for
+/// * `iters` - the maximum number of messages to send
+/// * `start_after` - the starting token id for the iteration
+/// * `limit` - the number of tokens to query in each message
+/// 
 fn collection_owners(
     deps: Deps,
     collection: Addr,
-    start: i32,
-    end: i32,
+    iters: u32,
+    start_after: Option<String>,
+    limit: Option<u32>,
 ) -> StdResult<Vec<OwnerInfo>> {
     let mut owners: Vec<OwnerInfo> = vec![];
     let contract = Cw721Contract(collection.clone());
 
-    //TODO: Query the SG721 contract to get the minter address
-    //Query minter contract to get num_tokens. (Can't use the sg721 num_tokens, as that returns the remaining amount after burn, rather than init total)
     
-    /*
-    let minter_addr = contract.minter(deps)?;
-    let mint_contract = Cw721Contract(minter_addr);
-    let num_tokens = mint_contract.config(deps)?.num_tokens;
-    */
-
-    if start > end {
-        return Err(StdError::generic_err("Invalid Range. Start must be less than End"));
-    }
-
-    if start < 0 {
-        return Err(StdError::generic_err("Negative Range. Start must be greater than 0"));
-    }
-
-    if end - start > 100 {
-        return Err(StdError::generic_err("Invalid Range Size. You can only query 100 owners at a time."));
-    }
-
-    for i in start..end {
-        let owner_query = match contract.owner_of(&deps.querier, i.to_string(), false) {
-            Ok(owner) => owner,
-            Err(_) => continue,
+    let mut i: u32 = 0;
+    let mut last_token = start_after.clone();
+    while i < iters {
+        let query_res = match contract.all_tokens(&deps.querier, last_token.clone(), limit) {
+            Ok(tokens) => tokens,
+            Err(err) => return Err(err),
         };
-        let owner_info = OwnerInfo {
-            id: i,
-            owner: Addr::unchecked(owner_query.owner.to_string()), //shouldnt have to check the address, since the CW721 contract already does
+        for token_id in query_res.tokens.clone() {
+            let owner = match contract.owner_of(&deps.querier, token_id.clone(), false) {
+                Ok(owner) => owner,
+                Err(err) => return Err(err),
+            };
+
+            owners.push(OwnerInfo{
+                id: token_id,
+                owner: owner.owner,
+            });
+        }
+        last_token = match query_res.tokens.last() {
+            Some(token) => Some(token.to_string()),
+            _ => last_token
         };
-        owners.push(owner_info);
+        i += 1;
     }
     Ok(owners)
 }

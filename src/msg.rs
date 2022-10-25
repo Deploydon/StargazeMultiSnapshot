@@ -12,7 +12,12 @@ pub enum ExecuteMsg {}
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    CollectionOwners{collection: Addr, start:i32, end:i32},
+    CollectionOwners{
+        collection: Addr, 
+        iters: u32,
+        start_after: Option<String>,
+        limit: Option<u32>,
+    },
 }
 
 //collection owners response
@@ -22,6 +27,8 @@ pub struct CollectionOwnersResponse {
 }
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct OwnerInfo {
-    pub id: i32,
-    pub owner: Addr
+    // The token id for the NFT
+    pub id: String,
+    // The owner of the ID, as a string
+    pub owner: String,
 }
