@@ -13,8 +13,8 @@ My rust abilities are not the best, so bare with me.
 Also included in the Tester folder is a simple nodejs script that uses the cosmwasm library to call this function, providing a testnet NFT collection. 
 
 ```
-Code ID: 317
-Testnet Address: stars1pl4mjn6l0ka6zsmn7f87ajjh55x8q3j8t77nacu3j6caq0yqq8xs3ve0u4
+Code ID: 328
+Testnet Address: stars18hxjy4f0suah8lq9uldwtg6uqysswfnj6yen2rjapvcr9tqlgdqs2un96x
 ```
 
 
@@ -34,6 +34,11 @@ Development Status:
 - [x] Querying based on a start and end index
 - [x] Better Error Handling
 - [x] Limiting number returned
-- [ ] Query for the minter address, and grab num_tokens. This will allow us to pass in page numbers, rather than a start and end index.
+- [x] Paged and ranged function.
+- [x] Query the SG721 contract for the minter address
+- [ ] Query the minter contract for the config to get num_tokens. This will allow us to pass in page numbers, rather than a start and end index. (Having a hard time querying this side!)
+- [ ] Cleanup all the unused code/imports
+- [ ] Commonwealth proposal
+- [ ] Mainnet
 
 

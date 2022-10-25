@@ -20,11 +20,6 @@ pub enum QueryMsg {
     },
 }
 
-//collection owners response
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct CollectionOwnersResponse {
-    pub owners: Vec<OwnerInfo>,
-}
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct OwnerInfo {
     // The token id for the NFT

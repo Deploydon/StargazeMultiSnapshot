@@ -1,15 +1,12 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, StdError};
-// use cw2::set_contract_version;
+use cosmwasm_std::{
+    to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult
+};
+use cw721_base::helpers::Cw721Contract;
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, OwnerInfo, QueryMsg};
-use cw721_base::helpers::Cw721Contract;
-/*
-// version info for migration info
-const CONTRACT_NAME: &str = "crates.io:stargaze-multisnap";
-const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
-*/
+
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -70,7 +67,6 @@ fn collection_owners(
 ) -> StdResult<Vec<OwnerInfo>> {
     let mut owners: Vec<OwnerInfo> = vec![];
     let contract = Cw721Contract(collection.clone());
-
     
     let mut i: u32 = 0;
     let mut last_token = start_after.clone();

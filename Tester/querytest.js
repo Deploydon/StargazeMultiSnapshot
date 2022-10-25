@@ -8,7 +8,6 @@ const CONTRACT_MULTI = "stars1y8t0xjw0aj0cedcev4n4ydmkusv7y5urmhxg48ttnfpkm5gxuc
 const COLLECTION_SG721 = "stars1ee4a3ad6lmc3ckvuuzlwk4vsyu7g7d7khtck07tsa8wgavapqarsvycuw4"; //"stars19ns6gzearm8pvcmvu2e96r9d49ynwejdfrfzgnktw02nyay7ceesckyxn6";
 const LIMIT = 40;
 const ITERS = 10;
-
 const OUT_FILE = "snapshot.json"
 
 async function main() {
