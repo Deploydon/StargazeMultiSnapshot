@@ -1,7 +1,6 @@
 use crate::error::ContractError;
 use crate::msg::{
-    AllOwnersResponse, ExecuteMsg, InstantiateMsg, MinterResponse,
-    OwnerInfo, OwnersResp, QueryMsg,
+    AllOwnersResponse, ExecuteMsg, InstantiateMsg, MinterResponse, OwnerInfo, OwnersResp, QueryMsg,
 };
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
