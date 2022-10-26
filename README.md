@@ -59,21 +59,17 @@ starsd tx wasm instantiate [CODE_ID] "{}" --label "Multi Snapshot Test" --admin 
 ```
 Make sure to replace to placeholders (`[CODE ID]`, `[ADMIN ADDRESS]`, `[KEY NAME]`) with your relevant values. `[CODE ID]` should be the value you found in the Code Storage section.
 
-### Client Test
-Finally we can test the code. Navigate to the `/Tester/` directory, install the dependencies using `npm`, and call the `test-client` cargo script.
+### Client Tests
+Finally we can test the code. Use the commands below to get started. They should be run from the project root.
 ```bash
-# Navigate to /Tester/
-cd Tester
-
 # Install dependencies
-npm i
+cargo prep-client
 
-# Run client test
-node ./querytest.js
+# Run the AllCollectionOwners query on the front end
+cargo client-all
 
-# OR
-cd ..
-cargo test-client
+# Run the CollectionOwnersRange query on the front end
+cargo client-range
 ```
 
 ### Parameter Tuning
