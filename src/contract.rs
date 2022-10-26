@@ -1,18 +1,15 @@
+use crate::error::ContractError;
+use crate::msg::{
+    AllOwnersResponse, ExecuteMsg, InstantiateMsg, MinterResponse, OwnerInfo, OwnersResp, QueryMsg,
+};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, QueryRequest, Response, StdError,
-    StdResult, WasmQuery,
+    to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, WasmQuery, QueryRequest, StdError
 };
-use crate::error::ContractError;
-use crate::msg::{
-    Config, ExecuteMsg, InstantiateMsg, MinterResponse, NumTokensResponse, OwnerInfo, OwnersResp,
-    QueryMsg,
-};
-//use cw721_base::helpers::Cw721Contract;
-use sg721_base::msg::QueryMsg as Sg721QueryMsg;
 use cw721::OwnerOfResponse;
-
+use cw721_base::helpers::Cw721Contract;
+use sg721_base::msg::QueryMsg as Sg721QueryMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -37,27 +34,88 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(_deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
-    let api = _deps.api;
-
+pub fn query(deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
     match _msg {
         QueryMsg::CollectionOwnersRange {
             collection,
             start,
             end,
-        } => to_binary(&collection_owners_range(
-            _deps,
-            api.addr_validate(&collection.to_string())?,
-            start,
-            end,
+        } => to_binary(&collection_owners_range(deps, collection, start, end)?),
+
+        QueryMsg::CollectionOwnersPaged { collection } => {
+            to_binary(&collection_owners_paged(deps, collection)?)
+        }
+
+        QueryMsg::AllCollectionOwners {
+            collection,
+            iters,
+            start_after,
+            limit,
+        } => to_binary(&all_collection_owners(
+            deps,
+            collection,
+            iters,
+            start_after,
+            limit,
         )?),
-        QueryMsg::CollectionOwnersPaged { collection, page } => to_binary(
-            &collection_owners_paged(_deps, api.addr_validate(&collection.to_string())?, page)?,
-        ),
     }
 }
 
-fn collection_owners_paged(deps: Deps, collection: Addr, page: i32) -> StdResult<OwnersResp> {
+/// Returns a list of token id --> owner wallet mappings
+///
+/// # Arguments
+/// * `collection` - the address of the collection to map for
+/// * `iters` - the maximum number of messages to send
+/// * `start_after` - the starting token id for the iteration
+/// * `limit` - the number of tokens to query in each message
+///
+fn all_collection_owners(
+    deps: Deps,
+    collection: String,
+    iters: u32,
+    start_after: Option<String>,
+    limit: Option<u32>,
+) -> StdResult<AllOwnersResponse> {
+    let mut owners: Vec<OwnerInfo> = vec![];
+
+    // Ensure the collection is a valid address and create CW721 contract from it
+    let coll_addr = deps.api.addr_validate(&collection)?;
+    let contract = Cw721Contract(coll_addr);
+
+    // Fetch the owner of each token
+    let mut i: u32 = 0;
+    let mut last_token = start_after.clone();
+    while i < iters {
+        // Fetch all token IDs from the source contract
+        let query_res = match contract.all_tokens(&deps.querier, last_token.clone(), limit) {
+            Ok(tokens) => tokens,
+            Err(err) => return Err(err),
+        };
+
+        // For each token ID, fetch the owner
+        for token_id in query_res.tokens.clone() {
+            let owner = match contract.owner_of(&deps.querier, token_id.clone(), false) {
+                Ok(owner) => owner,
+                Err(err) => return Err(err),
+            };
+            owners.push(OwnerInfo {
+                id: token_id,
+                owner: owner.owner,
+            });
+        }
+        // Update last_token to use in pagination
+        last_token = match query_res.tokens.last() {
+            Some(token) => Some(token.to_string()),
+            _ => last_token,
+        };
+        i += 1;
+    }
+    Ok(AllOwnersResponse { owners })
+}
+
+fn collection_owners_paged(deps: Deps, collection: String) -> StdResult<OwnersResp> {
+    let coll_addr = deps.api.addr_validate(&collection)?;
+
     let mut resp: OwnersResp = OwnersResp {
         minter: Addr::unchecked(""),
         num_tokens: 0,
@@ -65,22 +123,12 @@ fn collection_owners_paged(deps: Deps, collection: Addr, page: i32) -> StdResult
         owners: vec![],
     };
 
-    //let contract = Cw721Contract(collection.clone());
     let minter_query: MinterResponse =
         deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-            contract_addr: collection.to_string(),
+            contract_addr: coll_addr.to_string(),
             msg: to_binary(&Sg721QueryMsg::Minter {})?,
         }))?;
     resp.minter = Addr::unchecked(minter_query.minter);
-
-    //Now that we have the minter, we need to query the config from the minter to get num_tokens so we can calculate page
-    //Currently broken
-    let num_tokens_query: NumTokensResponse =
-        deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-            contract_addr: resp.minter.to_string(),
-            msg: to_binary(&Config {})?,
-        }))?;
-    //  resp.num_tokens = num_tokens_query.num_tokens;
 
     //Temp until querying num_tokens to properly calculate page is working
     let start = 1;
@@ -105,11 +153,6 @@ fn collection_owners_paged(deps: Deps, collection: Addr, page: i32) -> StdResult
     }
 
     for i in start..end {
-        /*  let owner_query = match contract.owner_of(&deps.querier, i.to_string(), false) {
-            Ok(owner) => owner,
-            Err(_) => continue,
-        };*/
-
         let owner_query: OwnerOfResponse =
             match deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
                 contract_addr: collection.to_string(),
@@ -122,14 +165,9 @@ fn collection_owners_paged(deps: Deps, collection: Addr, page: i32) -> StdResult
                 Err(_) => continue,
             };
 
-        /*  let owner_query =  deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-           contract_addr: collection.to_string(),
-           msg: to_binary(&Sg721QueryMsg::OwnerOf{token_id:i.to_string(), include_expired: Some(false)})?,
-        }))?;  */
         let owner_info = OwnerInfo {
-            id: i,
-            //owner: owner_query,
-            owner: Addr::unchecked(owner_query.owner), //shouldnt have to check the address, since the CW721 contract already does
+            id: i.to_string(),
+            owner: owner_query.owner, //shouldnt have to check the address, since the CW721 contract already does
         };
         resp.owners.push(owner_info);
     }
@@ -139,12 +177,12 @@ fn collection_owners_paged(deps: Deps, collection: Addr, page: i32) -> StdResult
 //Query by specific range.
 fn collection_owners_range(
     deps: Deps,
-    collection: Addr,
+    collection: String,
     start: i32,
     end: i32,
 ) -> StdResult<Vec<OwnerInfo>> {
+    let coll_addr = deps.api.addr_validate(&collection)?;
     let mut owners: Vec<OwnerInfo> = vec![];
-    //let contract = Cw721Contract(collection.clone());
 
     if start > end {
         return Err(StdError::generic_err(
@@ -165,14 +203,9 @@ fn collection_owners_range(
     }
 
     for i in start..end {
-        /*  let owner_query = match contract.owner_of(&deps.querier, i.to_string(), false) {
-            Ok(owner) => owner,
-            Err(_) => continue,
-        };*/
-
         let owner_query: OwnerOfResponse =
             match deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-                contract_addr: collection.to_string(),
+                contract_addr: coll_addr.to_string(),
                 msg: to_binary(&Sg721QueryMsg::OwnerOf {
                     token_id: i.to_string(),
                     include_expired: Some(false),
@@ -182,8 +215,8 @@ fn collection_owners_range(
                 Err(_) => continue,
             };
         let owner_info = OwnerInfo {
-            id: i,
-            owner: Addr::unchecked(owner_query.owner),
+            id: i.to_string(),
+            owner: owner_query.owner,
         };
         owners.push(owner_info);
     }

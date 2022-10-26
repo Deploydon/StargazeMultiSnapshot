@@ -2,3 +2,8 @@
 wasm = "build --release --lib --target wasm32-unknown-unknown"
 unit-test = "test --lib"
 schema = "run --bin schema"
+optimize-arm64 = "run-script optimize-arm64"
+store = "run-script store"
+prep-client = "run-script prep-client"
+client-all = "run-script client-all"
+client-range = "run-script client-range"
