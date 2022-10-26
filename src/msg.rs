@@ -12,8 +12,8 @@ pub enum ExecuteMsg {}
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    CollectionOwnersRange{collection: Addr, start:i32, end:i32},
-    CollectionOwnersPaged{collection: Addr, page:i32},
+    CollectionOwnersRange{collection: String, start:i32, end:i32},
+    CollectionOwnersPaged{collection: String},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
