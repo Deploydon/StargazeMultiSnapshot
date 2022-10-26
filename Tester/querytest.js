@@ -44,5 +44,4 @@ async function main() {
     console.log(`Time taken: ${end-start} milliseconds`)
 }
 
-
 main();

@@ -12,23 +12,38 @@ pub enum ExecuteMsg {}
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    CollectionOwners{
-        collection: Addr, 
-        iters: u32,
-        start_after: Option<String>,
-        limit: Option<u32>,
-    },
+    CollectionOwnersRange{collection: Addr, start:i32, end:i32},
+    CollectionOwnersPaged{collection: Addr, page:i32},
 }
 
-//collection owners response
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct CollectionOwnersResponse {
-    pub owners: Vec<OwnerInfo>,
-}
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct OwnerInfo {
-    // The token id for the NFT
     pub id: String,
-    // The owner of the ID, as a string
     pub owner: String,
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct OwnersResp {
+    pub minter: Addr,
+    pub num_tokens: i32,
+    pub num_pages: i32,
+    pub owners: Vec<OwnerInfo>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct MinterResponse {
+    pub minter: Addr,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct NumTokensResponse {
+    pub num_tokens: i32, 
+    //How can I get the response without having to declare the entire struct of what gets returned? 
+    //Only require num_tokens. If declaring the entire struct, we need factory to be optional to support old+new contracts
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct Config {
+
 }
