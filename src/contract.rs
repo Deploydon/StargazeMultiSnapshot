@@ -1,6 +1,6 @@
 use crate::error::ContractError;
 use crate::msg::{
-    AllOwnersResponse, Config, ExecuteMsg, InstantiateMsg, MinterResponse, NumTokensResponse,
+    AllOwnersResponse, ExecuteMsg, InstantiateMsg, MinterResponse,
     OwnerInfo, OwnersResp, QueryMsg,
 };
 #[cfg(not(feature = "library"))]
@@ -116,7 +116,8 @@ fn all_collection_owners(
 }
 
 fn collection_owners_paged(deps: Deps, collection: String) -> StdResult<OwnersResp> {
-    let coll_addr = deps.api.addr_validate(&collection);
+    let coll_addr = deps.api.addr_validate(&collection)?;
+
     let mut resp: OwnersResp = OwnersResp {
         minter: Addr::unchecked(""),
         num_tokens: 0,
@@ -126,18 +127,10 @@ fn collection_owners_paged(deps: Deps, collection: String) -> StdResult<OwnersRe
 
     let minter_query: MinterResponse =
         deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-            contract_addr: collection.to_string(),
+            contract_addr: coll_addr.to_string(),
             msg: to_binary(&Sg721QueryMsg::Minter {})?,
         }))?;
     resp.minter = Addr::unchecked(minter_query.minter);
-
-    //Now that we have the minter, we need to query the config from the minter to get num_tokens so we can calculate page
-    //Currently broken
-    let num_tokens_query: NumTokensResponse =
-        deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-            contract_addr: resp.minter.to_string(),
-            msg: to_binary(&Config {})?,
-        }))?;
 
     //Temp until querying num_tokens to properly calculate page is working
     let start = 1;

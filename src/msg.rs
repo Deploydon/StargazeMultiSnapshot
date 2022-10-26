@@ -51,13 +51,3 @@ pub struct OwnersResp {
 pub struct MinterResponse {
     pub minter: Addr,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct NumTokensResponse {
-    pub num_tokens: i32,
-    //How can I get the response without having to declare the entire struct of what gets returned?
-    //Only require num_tokens. If declaring the entire struct, we need factory to be optional to support old+new contracts
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct Config {}
