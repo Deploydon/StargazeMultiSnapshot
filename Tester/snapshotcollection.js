@@ -1,16 +1,13 @@
 //Snapshots a collection. Grabs the collections minter, queries for the num_tokens then queries the ranges.
 var cosmwasm = require("cosmwasm");
 
-const RPC = "https://rpc.elgafar-1.stargaze-apis.com/";
-
-
 var CONTRACT_MULTI = "stars18hxjy4f0suah8lq9uldwtg6uqysswfnj6yen2rjapvcr9tqlgdqs2un96x";
-
 var COLLECTION_SG721 = "stars1ee4a3ad6lmc3ckvuuzlwk4vsyu7g7d7khtck07tsa8wgavapqarsvycuw4";
-
-
+const RPC = "https://rpc.elgafar-1.stargaze-apis.com/";
 const PAGE_MAX = 100;
+
 async function main() {
+    const start_time = new Date().getTime()
     const client = await cosmwasm.CosmWasmClient.connect(RPC);
 
     //Query the SG721 contract for the minter
@@ -25,6 +22,7 @@ async function main() {
     var numCycles = Math.ceil(numTokens / PAGE_MAX);
     console.log("Total Collection Size: " + numTokens + " Num Queries: " + numCycles);
 
+    let queryCount = 2 // Two previous executed queries
     var start = 1;
     var end = 100;
     if (numTokens < PAGE_MAX) {
@@ -33,15 +31,21 @@ async function main() {
     var allOwners = [];
     for (var i = 1; i <= numCycles; i++) {
         const tokenOwners = await client.queryContractSmart(CONTRACT_MULTI, { collection_owners_range: { collection: COLLECTION_SG721, start: start, end: end } });
-        allOwners = allOwners.concat(tokenOwners.owners);
+        allOwners = allOwners.concat(tokenOwners);
+        
+        queryCount += 1
+        console.log("Completed for for IDs through", end)
+        
         start = i * PAGE_MAX;
         end = start + PAGE_MAX;
         if (end > numTokens) {
             end = numTokens;
         }
     }
-    console.log(allOwners);
-    console.log("Done");
+
+    const end_time = new Date().getTime()
+    console.log(`Fetched ${allOwners.length} NFTs in ${queryCount} queries.`)
+    console.log(`Time taken: ${end_time-start_time} milliseconds`)
 }
 
 
