@@ -4,7 +4,7 @@ var cosmwasm = require("cosmwasm");
 var fs = require("fs");
 
 const RPC = "https://rpc.elgafar-1.stargaze-apis.com/";
-const CONTRACT_MULTI = "stars1y8t0xjw0aj0cedcev4n4ydmkusv7y5urmhxg48ttnfpkm5gxuc2sknls35"//"stars1pl4mjn6l0ka6zsmn7f87ajjh55x8q3j8t77nacu3j6caq0yqq8xs3ve0u4";
+const CONTRACT_MULTI = "stars1euq4vu6rlapx95fszr99ptvcl7fvnc6t0xzmczxwyjkkn4v2cxvqplq0fs"//"stars1pl4mjn6l0ka6zsmn7f87ajjh55x8q3j8t77nacu3j6caq0yqq8xs3ve0u4";
 const COLLECTION_SG721 = "stars1ee4a3ad6lmc3ckvuuzlwk4vsyu7g7d7khtck07tsa8wgavapqarsvycuw4"; //"stars19ns6gzearm8pvcmvu2e96r9d49ynwejdfrfzgnktw02nyay7ceesckyxn6";
 const LIMIT = 40;
 const ITERS = 10;
@@ -18,14 +18,16 @@ async function main() {
     let start_after;
     let queryCount = 0
     while (true) {
-      const tokenOwners = await client.queryContractSmart(CONTRACT_MULTI, { 
-        collection_owners: { 
+      const queryRes = await client.queryContractSmart(CONTRACT_MULTI, { 
+        all_collection_owners: { 
           collection: COLLECTION_SG721, 
           iters: ITERS, 
           start_after: start_after, 
           limit: LIMIT,
         }
       });
+
+      const tokenOwners = queryRes.owners
       result = result.concat(tokenOwners)
       queryCount += 1
       
