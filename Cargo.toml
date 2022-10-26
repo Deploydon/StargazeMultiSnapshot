@@ -44,8 +44,10 @@ optimize-arm64 = """docker run --rm -v "$(pwd)":/code \
     cosmwasm/rust-optimizer-arm64:0.12.8 \
     && mv ./artifacts/stargaze_multisnap-aarch64.wasm ./artifacts/stargaze_multisnap.wasm
 """
-store = """starsd tx wasm store artifacts/stargaze_multisnap.wasm --from dev --gas-prices 0.025ustars --gas-adjustment 1.7 --gas auto --output json -b block"""
-test-client = """node ./Tester/querytest.js"""
+store = """starsd tx wasm store artifacts/stargaze_multisnap.wasm --from dev --gas-prices 0.025ustars --gas-adjustment 1.7 --gas auto --output json -b block -y"""
+prep-client = """cd ./Tester/ && npm install"""
+client-all = """node ./Tester/querytest.js"""
+client-range = """node ./Tester/snapshotcollection.js"""
 
 
 [dependencies]
