@@ -5,7 +5,7 @@ use cosmwasm_std::{
 };
 use cw721_base::helpers::Cw721Contract;
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, OwnerInfo, QueryMsg};
+use crate::msg::{InstantiateMsg, OwnerInfo, QueryMsg};
 
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -18,16 +18,6 @@ pub fn instantiate(
     Ok(Response::new()
         .add_attribute("method", "instantiate")
         .add_attribute("owner", _info.sender))
-}
-
-#[cfg_attr(not(feature = "library"), entry_point)]
-pub fn execute(
-    _deps: DepsMut,
-    _env: Env,
-    _info: MessageInfo,
-    _msg: ExecuteMsg,
-) -> Result<Response, ContractError> {
-    unimplemented!()
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
