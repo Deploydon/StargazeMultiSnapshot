@@ -5,7 +5,7 @@ use crate::msg::{
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult
+    to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, WasmQuery, QueryRequest, StdError
 };
 use cw721::OwnerOfResponse;
 use cw721_base::helpers::Cw721Contract;
@@ -36,7 +36,7 @@ pub fn execute(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
     match _msg {
-        QueryMsg::CollectionOwners {
+        QueryMsg::CollectionOwnersRange {
             collection,
             start,
             end,

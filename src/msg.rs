@@ -35,3 +35,21 @@ pub struct OwnerInfo {
     // The owner of the token, as a string
     pub owner: String,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct AllOwnersResponse {
+    pub owners: Vec<OwnerInfo>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct OwnersResp {
+    pub minter: Addr,
+    pub num_tokens: i32,
+    pub num_pages: i32,
+    pub owners: Vec<OwnerInfo>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct MinterResponse {
+    pub minter: Addr,
+}
