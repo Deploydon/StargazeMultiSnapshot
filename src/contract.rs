@@ -1,18 +1,17 @@
+use crate::error::ContractError;
+use crate::msg::{
+    AllOwnersResponse, Config, ExecuteMsg, InstantiateMsg, MinterResponse, NumTokensResponse,
+    OwnerInfo, OwnersResp, QueryMsg,
+};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, QueryRequest, Response, StdError,
     StdResult, WasmQuery,
 };
-use crate::error::ContractError;
-use crate::msg::{
-    Config, ExecuteMsg, InstantiateMsg, MinterResponse, NumTokensResponse, OwnerInfo, OwnersResp,
-    QueryMsg,
-};
-//use cw721_base::helpers::Cw721Contract;
-use sg721_base::msg::QueryMsg as Sg721QueryMsg;
 use cw721::OwnerOfResponse;
-
+use cw721_base::helpers::Cw721Contract;
+use sg721_base::msg::QueryMsg as Sg721QueryMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -43,16 +42,77 @@ pub fn query(deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
             collection,
             start,
             end,
-        } => to_binary(&collection_owners_range(
+        } => to_binary(&collection_owners_range(deps, collection, start, end)?),
+
+        QueryMsg::CollectionOwnersPaged { collection } => {
+            to_binary(&collection_owners_paged(deps, collection)?)
+        }
+
+        QueryMsg::AllCollectionOwners {
+            collection,
+            iters,
+            start_after,
+            limit,
+        } => to_binary(&all_collection_owners(
             deps,
             collection,
-            start,
-            end
+            iters,
+            start_after,
+            limit,
         )?),
-        QueryMsg::CollectionOwnersPaged { collection } => to_binary(
-            &collection_owners_paged(deps, collection)?,
-        ),
     }
+}
+
+/// Returns a list of token id --> owner wallet mappings
+///
+/// # Arguments
+/// * `collection` - the address of the collection to map for
+/// * `iters` - the maximum number of messages to send
+/// * `start_after` - the starting token id for the iteration
+/// * `limit` - the number of tokens to query in each message
+///
+fn all_collection_owners(
+    deps: Deps,
+    collection: String,
+    iters: u32,
+    start_after: Option<String>,
+    limit: Option<u32>,
+) -> StdResult<AllOwnersResponse> {
+    let mut owners: Vec<OwnerInfo> = vec![];
+
+    // Ensure the collection is a valid address and create CW721 contract from it
+    let coll_addr = deps.api.addr_validate(&collection)?;
+    let contract = Cw721Contract(coll_addr);
+
+    // Fetch the owner of each token
+    let mut i: u32 = 0;
+    let mut last_token = start_after.clone();
+    while i < iters {
+        // Fetch all token IDs from the source contract
+        let query_res = match contract.all_tokens(&deps.querier, last_token.clone(), limit) {
+            Ok(tokens) => tokens,
+            Err(err) => return Err(err),
+        };
+
+        // For each token ID, fetch the owner
+        for token_id in query_res.tokens.clone() {
+            let owner = match contract.owner_of(&deps.querier, token_id.clone(), false) {
+                Ok(owner) => owner,
+                Err(err) => return Err(err),
+            };
+            owners.push(OwnerInfo {
+                id: token_id,
+                owner: owner.owner,
+            });
+        }
+        // Update last_token to use in pagination
+        last_token = match query_res.tokens.last() {
+            Some(token) => Some(token.to_string()),
+            _ => last_token,
+        };
+        i += 1;
+    }
+    Ok(AllOwnersResponse { owners })
 }
 
 fn collection_owners_paged(deps: Deps, collection: String) -> StdResult<OwnersResp> {
@@ -102,7 +162,6 @@ fn collection_owners_paged(deps: Deps, collection: String) -> StdResult<OwnersRe
     }
 
     for i in start..end {
-
         let owner_query: OwnerOfResponse =
             match deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
                 contract_addr: collection.to_string(),
