@@ -1,7 +1,7 @@
 //Snapshots a collection. Grabs the collections minter, queries for the num_tokens then queries the ranges.
 var cosmwasm = require("cosmwasm");
 
-var CONTRACT_MULTI = "stars18hxjy4f0suah8lq9uldwtg6uqysswfnj6yen2rjapvcr9tqlgdqs2un96x";
+var CONTRACT_MULTI = "stars1rmpgkugz5mzcf8kfdzuk3dn5tjydnx7ynlw6n24ey60d3vwnf27sfdxzd6";
 var COLLECTION_SG721 = "stars1ee4a3ad6lmc3ckvuuzlwk4vsyu7g7d7khtck07tsa8wgavapqarsvycuw4";
 const RPC = "https://rpc.elgafar-1.stargaze-apis.com/";
 const PAGE_MAX = 100;
@@ -13,7 +13,7 @@ async function main() {
     //Query the SG721 contract for the minter
     //Query the minter config for the num_tokens
     //The num_tokens reponse from the SG721 is invalid as it is the remainder after burns. We need the full number.
-    
+
     const minterResp = await client.queryContractSmart(COLLECTION_SG721, { minter: {} });
     var mintContract = minterResp.minter;
 
@@ -32,10 +32,10 @@ async function main() {
     for (var i = 1; i <= numCycles; i++) {
         const tokenOwners = await client.queryContractSmart(CONTRACT_MULTI, { collection_owners_range: { collection: COLLECTION_SG721, start: start, end: end } });
         allOwners = allOwners.concat(tokenOwners);
-        
+
         queryCount += 1
         console.log("Completed for for IDs through", end)
-        
+
         start = i * PAGE_MAX;
         end = start + PAGE_MAX;
         if (end > numTokens) {
@@ -45,7 +45,7 @@ async function main() {
 
     const end_time = new Date().getTime()
     console.log(`Fetched ${allOwners.length} NFTs in ${queryCount} queries.`)
-    console.log(`Time taken: ${end_time-start_time} milliseconds`)
+    console.log(`Time taken: ${end_time - start_time} milliseconds`)
 }
 
 

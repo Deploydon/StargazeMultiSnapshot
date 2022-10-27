@@ -1,11 +1,11 @@
 use crate::error::ContractError;
 use crate::msg::{
-    AllOwnersResponse, ExecuteMsg, InstantiateMsg, MinterResponse, OwnerInfo, OwnersResp, QueryMsg,
+     ExecuteMsg, InstantiateMsg, OwnerInfo, QueryMsg,
 };
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, WasmQuery, QueryRequest, StdError
+    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, WasmQuery, QueryRequest, StdError
 };
 use cw721::OwnerOfResponse;
 use cw721_base::helpers::Cw721Contract;
@@ -42,10 +42,6 @@ pub fn query(deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
             end,
         } => to_binary(&collection_owners_range(deps, collection, start, end)?),
 
-        QueryMsg::CollectionOwnersPaged { collection } => {
-            to_binary(&collection_owners_paged(deps, collection)?)
-        }
-
         QueryMsg::AllCollectionOwners {
             collection,
             iters,
@@ -72,10 +68,10 @@ pub fn query(deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
 fn all_collection_owners(
     deps: Deps,
     collection: String,
-    iters: u32,
+    iters: Option<u32>,
     start_after: Option<String>,
     limit: Option<u32>,
-) -> StdResult<AllOwnersResponse> {
+) -> StdResult<Vec<OwnerInfo>> {
     let mut owners: Vec<OwnerInfo> = vec![];
 
     // Ensure the collection is a valid address and create CW721 contract from it
@@ -85,7 +81,7 @@ fn all_collection_owners(
     // Fetch the owner of each token
     let mut i: u32 = 0;
     let mut last_token = start_after.clone();
-    while i < iters {
+    while i < iters.unwrap_or(2) {
         // Fetch all token IDs from the source contract
         let query_res = match contract.all_tokens(&deps.querier, last_token.clone(), limit) {
             Ok(tokens) => tokens,
@@ -110,71 +106,17 @@ fn all_collection_owners(
         };
         i += 1;
     }
-    Ok(AllOwnersResponse { owners })
+    Ok(owners)
 }
 
-fn collection_owners_paged(deps: Deps, collection: String) -> StdResult<OwnersResp> {
-    let coll_addr = deps.api.addr_validate(&collection)?;
 
-    let mut resp: OwnersResp = OwnersResp {
-        minter: Addr::unchecked(""),
-        num_tokens: 0,
-        num_pages: 0,
-        owners: vec![],
-    };
-
-    let minter_query: MinterResponse =
-        deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-            contract_addr: coll_addr.to_string(),
-            msg: to_binary(&Sg721QueryMsg::Minter {})?,
-        }))?;
-    resp.minter = Addr::unchecked(minter_query.minter);
-
-    //Temp until querying num_tokens to properly calculate page is working
-    let start = 1;
-    let end = 100;
-
-    if start > end {
-        return Err(StdError::generic_err(
-            "Invalid Range. Start must be less than End",
-        ));
-    }
-
-    if start < 0 {
-        return Err(StdError::generic_err(
-            "Negative Range. Start must be greater than 0",
-        ));
-    }
-
-    if end - start > 100 {
-        return Err(StdError::generic_err(
-            "Invalid Range Size. You can only query 100 owners at a time.",
-        ));
-    }
-
-    for i in start..end {
-        let owner_query: OwnerOfResponse =
-            match deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-                contract_addr: collection.to_string(),
-                msg: to_binary(&Sg721QueryMsg::OwnerOf {
-                    token_id: i.to_string(),
-                    include_expired: Some(false),
-                })?,
-            })) {
-                Ok(owner) => owner,
-                Err(_) => continue,
-            };
-
-        let owner_info = OwnerInfo {
-            id: i.to_string(),
-            owner: owner_query.owner, //shouldnt have to check the address, since the CW721 contract already does
-        };
-        resp.owners.push(owner_info);
-    }
-    Ok(resp)
-}
-
-//Query by specific range.
+/// Returns a list of token id --> owner wallet mappings
+///
+/// # Arguments
+/// * `collection` - the address of the collection to map for
+/// * `start` - starting token id
+/// * `end` - ending token id (inclusive)
+///
 fn collection_owners_range(
     deps: Deps,
     collection: String,
@@ -222,6 +164,3 @@ fn collection_owners_range(
     }
     Ok(owners)
 }
-
-#[cfg(test)]
-mod tests {}
