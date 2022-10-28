@@ -22,9 +22,9 @@ Also included in the Tester folder is a simple nodejs script that uses the cosmw
 
 ```
 
-Code ID: 351
+Code ID: 353
 
-Testnet Address: stars1rmpgkugz5mzcf8kfdzuk3dn5tjydnx7ynlw6n24ey60d3vwnf27sfdxzd6
+Testnet Address: stars1nwv84vphw4ajcgqclclrucqtuhseu47gnz22pvahqn8zj8x956ash7hz36
 
 ```
 
@@ -185,6 +185,7 @@ end: Token ID to end at
 
 - [x] Cleanup all the unused code/imports
 
-- [ ] Commonwealth proposal
+- [x] [Commonwealth Discussion](https://commonwealth.im/stargaze/discussion/7390-proposal-discussion-deploy-the-multi-snapshot-contract)
+- [ ] On Chain Proposal
 
 - [ ] Mainnet

@@ -80,7 +80,7 @@ fn all_collection_owners(
 
     // Fetch the owner of each token
     let mut i: u32 = 0;
-    let mut last_token = start_after.clone();
+    let mut last_token = start_after;
     while i < iters.unwrap_or(2) {
         // Fetch all token IDs from the source contract
         let query_res = match contract.all_tokens(&deps.querier, last_token.clone(), limit) {

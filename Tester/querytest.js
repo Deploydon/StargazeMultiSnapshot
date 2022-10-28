@@ -4,8 +4,8 @@ var cosmwasm = require("cosmwasm");
 var fs = require("fs");
 
 const RPC = "https://rpc.elgafar-1.stargaze-apis.com/";
-const CONTRACT_MULTI = "stars1rmpgkugz5mzcf8kfdzuk3dn5tjydnx7ynlw6n24ey60d3vwnf27sfdxzd6"//"stars1pl4mjn6l0ka6zsmn7f87ajjh55x8q3j8t77nacu3j6caq0yqq8xs3ve0u4";
-const COLLECTION_SG721 = "stars1ee4a3ad6lmc3ckvuuzlwk4vsyu7g7d7khtck07tsa8wgavapqarsvycuw4"; //"stars19ns6gzearm8pvcmvu2e96r9d49ynwejdfrfzgnktw02nyay7ceesckyxn6";
+const CONTRACT_MULTI = "stars1nwv84vphw4ajcgqclclrucqtuhseu47gnz22pvahqn8zj8x956ash7hz36"
+const COLLECTION_SG721 = "stars1ee4a3ad6lmc3ckvuuzlwk4vsyu7g7d7khtck07tsa8wgavapqarsvycuw4";
 
 
 const LIMIT = 40;
