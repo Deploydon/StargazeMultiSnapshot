@@ -4,7 +4,7 @@ var cosmwasm = require("cosmwasm");
 var fs = require("fs");
 
 const RPC = "https://rpc.elgafar-1.stargaze-apis.com/";
-const CONTRACT_MULTI = "stars1nwv84vphw4ajcgqclclrucqtuhseu47gnz22pvahqn8zj8x956ash7hz36"
+const CONTRACT_MULTI = "stars1nhyua3khswcu8zcz24n4kc6aasxsn3myqlhtxakelqkahv6txzeq8r6gk8"
 const COLLECTION_SG721 = "stars1ee4a3ad6lmc3ckvuuzlwk4vsyu7g7d7khtck07tsa8wgavapqarsvycuw4";
 
 
@@ -17,7 +17,7 @@ async function main() {
     result = []
     const client = await cosmwasm.CosmWasmClient.connect(RPC);
     let start_after;
-    let queryCount = 0
+    let queryCount = 0    
     while (true) {
       const tokenOwners = await client.queryContractSmart(CONTRACT_MULTI, { 
         all_collection_owners: { 

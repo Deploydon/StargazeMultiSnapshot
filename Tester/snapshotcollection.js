@@ -1,7 +1,7 @@
 //Snapshots a collection. Grabs the collections minter, queries for the num_tokens then queries the ranges.
 var cosmwasm = require("cosmwasm");
 
-var CONTRACT_MULTI = "stars1nwv84vphw4ajcgqclclrucqtuhseu47gnz22pvahqn8zj8x956ash7hz36";
+var CONTRACT_MULTI = "stars1nhyua3khswcu8zcz24n4kc6aasxsn3myqlhtxakelqkahv6txzeq8r6gk8";
 var COLLECTION_SG721 = "stars1ee4a3ad6lmc3ckvuuzlwk4vsyu7g7d7khtck07tsa8wgavapqarsvycuw4";
 const RPC = "https://rpc.elgafar-1.stargaze-apis.com/";
 const PAGE_MAX = 100;

@@ -22,9 +22,9 @@ Also included in the Tester folder is a simple nodejs script that uses the cosmw
 
 ```
 
-Code ID: 353
+Code ID: 429
 
-Testnet Address: stars1nwv84vphw4ajcgqclclrucqtuhseu47gnz22pvahqn8zj8x956ash7hz36
+Testnet Address: stars1nhyua3khswcu8zcz24n4kc6aasxsn3myqlhtxakelqkahv6txzeq8r6gk8
 
 ```
 
